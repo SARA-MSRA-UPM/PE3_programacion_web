@@ -6,3 +6,4 @@
 
 ## Objetivos a realizar
 1. ****
+netstat -aon | findstr 1000*
