@@ -1,5 +1,2 @@
 requests
-fastapi
-fastapi[standard]
 matplotlib
-svgpathtools

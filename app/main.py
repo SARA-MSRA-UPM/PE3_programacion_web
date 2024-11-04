@@ -1,59 +1,64 @@
+# external imports
+import random
 from time import sleep
-import os
-import socket
-from fastapi import FastAPI
-from pydantic import BaseModel
-from typing import List
-from threading import Lock
-from contextlib import asynccontextmanager
+import requests
 
-# External imports
-from src.actors.points.path_point import PathPoint
-from src.actors.radar import Radar
-from src.base.monitor import Monitor
-from src.base.lector import Lector
-from src.base.socket_listener import SocketListener
-from src.base.radar_collection import RadarCollection, PositionData
+# internal imports
+from src.dataModels.radar_model import RadarModel
+from src.actors.stream_reader import StreamReader
 
 
-radar_collection = RadarCollection()
-radars_lock = Lock()
-BASE_PORT = 10000
-MAIN_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_IP = "127.0.0.1"
+MAIN_URL = f"http://{BASE_IP}:8000"
+SCENARIO_CONFIGURATION_URL = f"{MAIN_URL}/scenarioConfiguration"
+SCENARIO_LIST_URL = f"{MAIN_URL}/scenarioList"
+SCENARIO_ID_URL = f"{MAIN_URL}/scenario"
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    listeners = []
-    for i in range(1, 5):
-        listeners.append(SocketListener(BASE_PORT + i, f"{MAIN_DIR}/src/svg_images/scenario{i}", radar_collection))
-        listeners[-1].daemon = True
-        listeners[-1].start()
-    yield
-    for listener in listeners:
-        listener.stop()
+if __name__ == '__main__':
 
-app = FastAPI(lifespan=lifespan)
+    # # Get Hello World
+    # response_main = requests.get(MAIN_URL)
+    # print(response_main.text)
 
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
+    # Environment configuration
+    radars = (
+        RadarModel(
+            radar_name="radar0",
+            x=0,
+            y=0,
+            detection_range=500,
+            orientation_initial=45,
+            increment=5,
+        ).model_to_dict_for_radar_server(),
+        RadarModel(
+            radar_name="radar1",
+            x=500,
+            y=500,
+            detection_range=500,
+            orientation_initial=45,
+            increment=5,
+        ).model_to_dict_for_radar_server()
+    )
+    requests.post(SCENARIO_CONFIGURATION_URL, json=radars)
 
-@app.post("/scenarioConfiguration")
-async def scenario_configuration(data: List[PositionData]):
-    global radar_collection
-    with radars_lock:
-        radar_collection.radars = data
-    return {"message": "Scenario configured", "data": data}
+    get_scenario_response = requests.get(SCENARIO_CONFIGURATION_URL)
+    if get_scenario_response.status_code != 200:
+        print("Error during environment configuration")
+        print(get_scenario_response.text)
+        exit(1)
 
-@app.get("/scenarioConfiguration")
-async def get_scenario_configuration():
-    with radars_lock:
-        return radar_collection.radars
+    # Select environment to get data
+    response_scenario_list = requests.get(SCENARIO_LIST_URL).json()
+    print(response_scenario_list)
+    id_scenario = response_scenario_list["scenarios"][
+        random.randint(0, len(response_scenario_list["scenarios"]) - 1)
+    ]
 
-@app.get("/scenarioList")
-async def scenario_list():
-    return {"scenarios": [1, 2, 3, 4]}
+    response_scenario_id = requests.get(
+        SCENARIO_ID_URL + f"/{id_scenario}"
+    ).json()
+    scenario_port = response_scenario_id["port"]
 
-@app.get("/scenario/{scenario_id}")
-async def scenario(scenario_id: int):
-    return {"message": f"Scenario {scenario_id}", "port": BASE_PORT + scenario_id}
+    # Open socket to start stream of detections
+    stream_reader = StreamReader(url=BASE_IP, port=scenario_port)
+    stream_reader.start()
