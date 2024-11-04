@@ -72,4 +72,12 @@ python3 app/main.py
 ```
 
 ## Objetivos a realizar
-1. **Visualización de los datos obtenidos**
+1. **Visualización de los datos obtenidos** El objetivo de esta práctica 
+entregable consiste en implementar la funcionalidad de visualización de 
+detecciones. Se debe crear una ventana de visualización a partir de las 
+detecciones recibidas mediante la conexión por socket TCP al servidor 
+`RadarServer`.
+   - Como aclaración la visualización que se pide como objetivo es similar a la 
+   desarrollada en la 
+   [Práctica entregable 2](https://github.com/SARA-MSRA-UPM/PE2_tiempo_real), 
+   aunque no es necesaria la vista que representaba los radares.
