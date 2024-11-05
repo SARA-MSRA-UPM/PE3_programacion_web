@@ -81,3 +81,13 @@ detecciones recibidas mediante la conexión por socket TCP al servidor
    desarrollada en la 
    [Práctica entregable 2](https://github.com/SARA-MSRA-UPM/PE2_tiempo_real), 
    aunque no es necesaria la vista que representaba los radares.
+2. **Validar la solución con todos los escenarios** Para la entrega de la
+práctica, junto con el código se deberán entregar unas capturas de la
+visualización de cada escenario y un texto con la configuración de radares
+utilizada para conseguirlas.
+
+> [!WARNING]
+> Las figuras de los escenarios no tienen porque estar en la región en la
+> que se trabajó en la práctica 2 ($x,y \in [0,200]$). Conviene
+> colocar rádares por distintas zonas para encontrar las áreas por las que
+> se mueven los puntos en cada escenario.
