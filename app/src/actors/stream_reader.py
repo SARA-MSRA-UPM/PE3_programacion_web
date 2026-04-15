@@ -4,11 +4,15 @@ from socket import socket
 from ast import literal_eval
 
 # internal imports
-from ..dataModels.detection_model import DetectionModel
+from src.models.radar_detection_model import RadarDetectionModel
+from src.graphics.environment_view import EnvironmentView
 
 
 class StreamReader(Thread):
-    def __init__(self, url: str, port: int):
+    def __init__(
+            self,
+            url: str,
+            port: int):
         super().__init__()
 
         self.url = url
@@ -31,12 +35,12 @@ class StreamReader(Thread):
                 while '\n' in buffer:
                     message, buffer = buffer.split('\n', 1)
                     radar_name, distance_to_radar, facing = literal_eval(message)
-                    detection = DetectionModel(
+                    detection = RadarDetectionModel(
                         radar_name=radar_name,
                         distance_to_radar=float(distance_to_radar),
                         relative_facing=float(facing)
                     )
-                    print(detection.__dict__)
+                    print(detection)
 
         finally:
             self.socket_client.close()

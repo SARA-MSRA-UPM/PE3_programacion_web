@@ -19,7 +19,7 @@ class RadarModel:
         self.orientation_initial = orientation_initial
         self.increment = increment
 
-    def model_to_dict_for_radar_server(self) -> dict:
+    def to_dict(self) -> dict:
         return {
             "name": self.radar_name,
             "position_x": self.x,
